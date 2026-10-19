@@ -1,0 +1,12 @@
+# Build artifacts (regenerate with ./build.sh)
+HT07Menu
+HT07Menu.app/
+ht07probe
+ht07probe.app/
+*.o
+*.dSYM/
+build/
+# runtime / scratch
+probe_run.out
+*.log
+.DS_Store
