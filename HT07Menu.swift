@@ -13,10 +13,27 @@ import ServiceManagement
 // Start-at-login via the modern login-item API (macOS 13+). Registers the running
 // app bundle itself, so it relaunches at login. Works best from /Applications.
 enum LoginItem {
-    static var enabled: Bool { SMAppService.mainApp.status == .enabled }
-    static func set(_ on: Bool) {
-        do { if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() } }
-        catch { NSLog("HT07Menu login item error: \(error.localizedDescription)") }
+    static var status: SMAppService.Status { SMAppService.mainApp.status }
+    static var enabled: Bool { status == .enabled }
+    static var statusName: String {
+        switch status {
+        case .enabled: return "enabled"
+        case .notRegistered: return "notRegistered"
+        case .requiresApproval: return "requiresApproval"
+        case .notFound: return "notFound"
+        @unknown default: return "unknown"
+        }
+    }
+    /// Returns a human-readable result/error for the app log.
+    @discardableResult
+    static func set(_ on: Bool) -> String {
+        do {
+            if on { try SMAppService.mainApp.register() }
+            else { try SMAppService.mainApp.unregister() }
+            return "login item \(on ? "register" : "unregister") ok (status=\(statusName))"
+        } catch {
+            return "login item \(on ? "register" : "unregister") FAILED: \(error.localizedDescription) (status=\(statusName))"
+        }
     }
 }
 
@@ -288,6 +305,7 @@ struct ContentView: View {
     @State private var selFun = 1
     @State private var showLog = false
     @State private var eqSel = 0
+    @State private var loginOn = LoginItem.enabled
 
     func batt(_ v:Int,_ chg:Bool)->String { v<0 ? "—" : "\(v)%\(chg ? " ⚡︎" : "")" }
 
@@ -426,11 +444,17 @@ struct ContentView: View {
 
             Divider()
             HStack {
-                Toggle("Start at login", isOn: Binding(get: { LoginItem.enabled }, set: { LoginItem.set($0) }))
+                Toggle("Start at login", isOn: $loginOn)
                     .toggleStyle(.checkbox).font(.caption)
+                    .onChange(of: loginOn) { _, want in
+                        ble.note(LoginItem.set(want))
+                        // Reflect the real status: if (un)register didn't take, snap back.
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { loginOn = LoginItem.enabled }
+                    }
                 Spacer()
                 Button("Quit") { NSApplication.shared.terminate(nil) }.keyboardShortcut("q")
             }
+            .onAppear { loginOn = LoginItem.enabled }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 16)
