@@ -8,6 +8,17 @@
 
 import SwiftUI
 import CoreBluetooth
+import ServiceManagement
+
+// Start-at-login via the modern login-item API (macOS 13+). Registers the running
+// app bundle itself, so it relaunches at login. Works best from /Applications.
+enum LoginItem {
+    static var enabled: Bool { SMAppService.mainApp.status == .enabled }
+    static func set(_ on: Bool) {
+        do { if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() } }
+        catch { NSLog("HT07Menu login item error: \(error.localizedDescription)") }
+    }
+}
 
 // MARK: - Protocol constants
 let SVC_CONTROL = CBUUID(string: "A001")
@@ -414,7 +425,12 @@ struct ContentView: View {
             }
 
             Divider()
-            HStack { Spacer(); Button("Quit") { NSApplication.shared.terminate(nil) }.keyboardShortcut("q") }
+            HStack {
+                Toggle("Start at login", isOn: Binding(get: { LoginItem.enabled }, set: { LoginItem.set($0) }))
+                    .toggleStyle(.checkbox).font(.caption)
+                Spacer()
+                Button("Quit") { NSApplication.shared.terminate(nil) }.keyboardShortcut("q")
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 16)

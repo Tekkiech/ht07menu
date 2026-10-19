@@ -5,6 +5,22 @@ without the QCY phone app or an account. It speaks QCY's own BLE protocol, which
 I reverse-engineered and wrote up in
 [qcy-ht07-protocol](https://github.com/Tekkiech/qcy-ht07-protocol).
 
+## Install (from a release)
+
+Download the `.dmg` from the Releases page, open it, and drag `HT07Menu.app` to
+Applications.
+
+The app is ad-hoc signed, not notarized, so the first open is blocked by
+Gatekeeper. Right-click the app and choose Open, then Open again in the dialog.
+If macOS still refuses ("damaged" or "unverified"), clear the quarantine flag:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/HT07Menu.app
+```
+
+Then launch it and grant Bluetooth when asked. To build it yourself instead, see
+below.
+
 ## Build
 
 ```bash
@@ -44,7 +60,8 @@ Equalizer presets: Default, Pop, Heavy Bass, Rock, Soft, Classic.
 
 A game/low-latency toggle, an L/R balance slider, and touch-gesture editing
 (reassign a tap to a function). An advanced section adds an EQ read, a raw-frame
-console, the firmware string, and a live log.
+console, the firmware string, and a live log. There's a "Start at login"
+checkbox at the bottom; it works best when the app lives in /Applications.
 
 ## How it works
 
@@ -68,5 +85,16 @@ SPP channel, not BLE, so a BLE app can't send it.
 
 Ad-hoc signed. For a permanent install, sign with a Developer ID so you grant
 Bluetooth once.
+
+## Making a release
+
+```bash
+./make-dmg.sh
+```
+
+That builds the app and packages `HT07Menu-<version>.dmg` with a drag-to-
+Applications layout, and prints its sha256. Attach that file to a GitHub release.
+Because it isn't notarized, note the right-click-Open / `xattr` step in the
+release description so people can actually run it.
 
 Not affiliated with or endorsed by QCY.

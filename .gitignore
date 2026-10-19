@@ -10,3 +10,4 @@ build/
 probe_run.out
 *.log
 .DS_Store
+*.dmg
