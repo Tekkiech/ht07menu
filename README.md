@@ -2,7 +2,8 @@
 
 A macOS menu-bar app that controls QCY Arcbuds HT07 earbuds over Bluetooth LE,
 without the QCY phone app or an account. It speaks QCY's own BLE protocol, which
-I reverse-engineered and wrote up in the `qcy-ht07-protocol` repo.
+I reverse-engineered and wrote up in
+[qcy-ht07-protocol](https://github.com/Tekkiech/qcy-ht07-protocol).
 
 ## Build
 
@@ -55,7 +56,8 @@ map from `0x000D`.
 
 `HT07Menu.swift` is the whole app. `ht07probe.swift` is a small command-line
 probe I used to find the GATT layout during bring-up. The frames and command IDs
-are in the protocol repo.
+are documented in
+[qcy-ht07-protocol](https://github.com/Tekkiech/qcy-ht07-protocol).
 
 ## Limits
 
